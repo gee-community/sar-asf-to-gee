@@ -12,3 +12,4 @@ platforms = ["osx-arm64"]
 python = "3.11.*"
 nbdev = "2.2.10.*"
 jupyter = "1.0.0.*"
+hyp3_sdk = "4.0.0.*"
