@@ -7,9 +7,24 @@ channels = ["conda-forge"]
 platforms = ["osx-arm64"]
 
 [tasks]
+jlab = "jupyter lab --ContentsManager.allow_hidden=True"
 
 [dependencies]
 python = "3.11.*"
 nbdev = "2.2.10.*"
 jupyter = "1.0.0.*"
-hyp3_sdk = "4.0.0.*"
+hyp3_sdk = ">=6.0.0,<6.1"
+asf_search = ">=6.7.3,<6.8"
+gcsfs = "2023.12.2.post1.*"
+pandas = ">=2.2.0,<2.3"
+pyarrow = ">=14.0.2,<14.1"
+earthengine-api = ">=0.1.386,<0.2"
+boto3 = ">=1.34.25,<1.35"
+requests = ">=2.31.0,<2.32"
+xarray = ">=2024.1.1,<2024.2"
+h5netcdf = ">=1.3.0,<1.4"
+netcdf4 = ">=1.6.5,<1.7"
+h5py = ">=3.10.0,<3.11"
+rioxarray = ">=0.15.1,<0.16"
+gdal = ">=3.8.3,<3.9"
+rio-cogeo = ">=5.2.0,<5.3"
