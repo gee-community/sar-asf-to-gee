@@ -11,7 +11,7 @@ to Google Cloud Storage and the creation of Google Earth Engine assets.
 
 ## Prerequisites
 
-Authentication for NASA Earthdata - See:
+Authenticate to NASA Earthdata - See:
 https://nasa-openscapes.github.io/2021-Cloud-Hackathon/tutorials/04_NASA_Earthdata_Authentication.html -
 See:
 https://urs.earthdata.nasa.gov/documentation/for_users/data_access/create_net_rc_file
