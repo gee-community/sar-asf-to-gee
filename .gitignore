@@ -2,3 +2,11 @@
 .pixi
 
 /.quarto/
+sar-asf-to-gee.code-workspace
+
+*.pyc
+
+.ipynb_checkpoints/
+downloads/
+temp/
+temp_downloads/
