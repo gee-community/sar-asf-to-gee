@@ -11,18 +11,24 @@ to Google Cloud Storage and the creation of Google Earth Engine assets.
 
 ## Prerequisites
 
-Authenticate to NASA Earthdata - See:
-https://nasa-openscapes.github.io/2021-Cloud-Hackathon/tutorials/04_NASA_Earthdata_Authentication.html -
-See:
-https://urs.earthdata.nasa.gov/documentation/for_users/data_access/create_net_rc_file
-
-Authenticate to Google Cloud - See:
-https://cloud.google.com/sdk/gcloud/reference/auth/application-default/loginca -
-`gcloud auth application-default login`
-
-Authenticate to Google Earth Engine - See:
-https://developers.google.com/earth-engine/guides/auth -
-`earthengine authenticate`
+1.  A NASA Earthdata account
+    - You can register for an Earthdata Login here:
+      https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/earthdata-login
+    - Create a `.netfc` file that contains the Earthdata authentication
+      credentials. See:
+      https://nasa-openscapes.github.io/2021-Cloud-Hackathon/tutorials/04_NASA_Earthdata_Authentication.html
+2.  A Google Cloud account
+    - Create Google Cloud authentication credentials using the [Google
+      Cloud Command Line Interface](https://cloud.google.com/cli) with
+      the command: `gcloud auth application-default login`
+    - See:
+      https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login
+3.  A Google Earth Engine account
+    - Create Google Earth Engine authentication credentials using the
+      [Google Earth Engine Command Lin
+      Tool](https://developers.google.com/earth-engine/guides/command_line)
+      with the command: `earthengine authenticate`
+    - See: https://developers.google.com/earth-engine/guides/auth
 
 ## Package Installation
 
@@ -34,15 +40,22 @@ pip install git+https://github.com/gee-community/sar-asf-to-gee.git
 
 ## How to use
 
-``` python
-from hyp3_sdk import HyP3
-from sar_asf_to_gee.hyp3 import Transfer
-```
+This package assumes that you have already created datasets using the
+[ASF HyP3](https://hyp3-docs.asf.alaska.edu/) processing system using
+either the [ASF Data Search
+Vertex](https://hyp3-docs.asf.alaska.edu/using/vertex/) web interface or
+programmatically using the [HyP3 SDK for
+Python](https://hyp3-docs.asf.alaska.edu/using/sdk/) or [HyP3 REST
+API](https://hyp3-docs.asf.alaska.edu/using/api/).
 
-Define a job name for HyP3 generated files that previously submitted via
-the [ASF Data Search
-Vertex](https://hyp3-docs.asf.alaska.edu/using/vertex/) web application
-or the [HyP3 Python SDK](https://hyp3-docs.asf.alaska.edu/using/sdk/).
+The [status of previously submitted
+jobs](https://search.asf.alaska.edu/#/?searchType=On%20Demand) can found
+within the Vertex application.
+
+### Find HyP3 processed datasets
+
+Define a variable for the a job/project name of the HyP3 generated files
+that were previously submitted.
 
 ``` python
 job_name = 'test submit_insar_job'
@@ -51,6 +64,8 @@ job_name = 'test submit_insar_job'
 Find HyP3 jobs that are completed.
 
 ``` python
+from hyp3_sdk import HyP3
+
 hyp3 = HyP3()
 batch_completed = hyp3.find_jobs(
     name=job_name,
@@ -58,10 +73,14 @@ batch_completed = hyp3.find_jobs(
 )
 ```
 
-Loop through the jobs, transferring the results locally, then to Google
-Cloud Storage, then create an Earth Engine asset.
+### Transfer datasets
+
+Loop through the completed jobs, transferring the results locally, then
+to Google Cloud Storage, and then create an Earth Engine asset.
 
 ``` python
+from sar_asf_to_gee.hyp3 import Transfer
+
 for job in batch_completed:
     t = Transfer(
         job_dict=job.to_dict(),
