@@ -29,7 +29,6 @@ def create_gee_image_collection(gee_gcp_project, gee_image_collection):
 
 # %% ../00_core.ipynb 5
 def filter_jobs(
-    # hyp3_batch,
     jobs,
     expired=None,
     status_code=None,
