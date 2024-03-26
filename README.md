@@ -38,7 +38,7 @@ Install directly from the GitHub repo.
 pip install git+https://github.com/gee-community/sar-asf-to-gee.git
 ```
 
-## How to use
+# How to use
 
 This package assumes that you have already created datasets using the
 [ASF HyP3](https://hyp3-docs.asf.alaska.edu/) processing system using
@@ -52,192 +52,179 @@ The [status of previously submitted
 jobs](https://search.asf.alaska.edu/#/?searchType=On%20Demand) can found
 within the Vertex application.
 
-### Find HyP3 processed datasets
-
-Define a variable for the a job/project name of the HyP3 generated files
-that were previously submitted.
-
-``` python
-job_name = 'test submit_insar_job'
-```
-
-Find HyP3 jobs that are completed.
+## Imports
 
 ``` python
 from hyp3_sdk import HyP3
 
+from sar_asf_to_gee import core
+from sar_asf_to_gee import asf_hyp3
+```
+
+Create an instance of the HyP3 class, which is used to query for jobs.
+
+``` python
 hyp3 = HyP3()
+```
+
+## InSAR GAMMA Example
+
+Find HyP3 InSAR GAMMA jobs that are completed but not expired.
+
+``` python
+job_name = 'INSAR_GAMMA_processing_example'
 batch_completed = hyp3.find_jobs(
     name=job_name,
     status_code='SUCCEEDED',
 )
+jobs = core.filter_jobs(batch_completed.jobs, expired=False)
+print(f'Found {len(jobs)} unexpired jobs.')
 ```
 
-### Transfer datasets
+    Found 1 unexpired jobs.
 
 Loop through the completed jobs, transferring the results locally, then
 to Google Cloud Storage, and then create an Earth Engine asset.
 
 ``` python
-from sar_asf_to_gee.hyp3 import Transfer
-
-for job in batch_completed:
-    t = Transfer(
+for job in jobs:
+    print(f'Processing {job.name}')
+    t = asf_hyp3.Transfer(
         job_dict=job.to_dict(),
         gcs_bucket='hyp3-data-staging',
         gee_gcp_project='sar-asf-to-gee',
-        gee_image_collection='test_image_collection',
+        gee_image_collection='test_image_collection_INSAR_GAMMA',
         local_storage='temp_downloads',
     )
-    t.hpy3_results_to_local()
+    print(f'  Transferring files from ASF to local computer...')
+    t.to_local()
+    print(f'  Transferring files from local computer to Google Cloud Storage...')
     t.to_gcs()
+    print(f'  Creating Google Earth Engine assets...')
     t.create_gee_asset()
+    print(f'  Done.')
 ```
 
-    /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/.pixi/env/lib/python3.11/site-packages/asf_search/download/download.py:65: UserWarning: File already exists, skipping download: temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75.zip
+    Processing INSAR_GAMMA_processing_example
+      Transferring files from ASF to local computer...
+      Transferring files from local computer to Google Cloud Storage...
+      Creating Google Earth Engine assets...
+      Done.
+
+    /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/.pixi/envs/default/lib/python3.11/site-packages/asf_search/download/download.py:65: UserWarning: File already exists, skipping download: temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2.zip
       warnings.warn(f'File already exists, skipping download: {os.path.join(path, filename)}')
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_corr.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_corr.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_corr.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_los_disp.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_corr.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_unw_phase.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_los_disp.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_inc_map.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_unw_phase.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_amp.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_inc_map.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_vert_disp.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_amp.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_water_mask.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_vert_disp.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_water_mask.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2/S1AA_20231206T185929_20240311T185926_VVR096_INT80_G_ueF_39A2_water_mask.tif
+
+## InSAR Burst example
+
+Find HyP3 InSAR Burst jobs that are completed but not expired.
+
+``` python
+job_name = 'INSAR_ISCE_BURST_processing_example'
+batch_completed = hyp3.find_jobs(
+    name=job_name,
+    status_code='SUCCEEDED',
+)
+jobs = core.filter_jobs(batch_completed.jobs, expired=False)
+print(f'Found {len(jobs)} unexpired jobs.')
+```
+
+    Found 1 unexpired jobs.
+
+``` python
+for job in jobs:
+    print(f'Processing {job.name}')
+    t = asf_hyp3.Transfer(
+        job_dict=job.to_dict(),
+        gcs_bucket='hyp3-data-staging',
+        gee_gcp_project='sar-asf-to-gee',
+        gee_image_collection='test_image_collection_INSAR_ISCE_BURST',
+        local_storage='temp_downloads',
+    )
+    print(f'  Transferring files from ASF to local computer...')
+    t.to_local()
+    print(f'  Transferring files from local computer to Google Cloud Storage...')
+    t.to_gcs()
+    print(f'  Creating Google Earth Engine assets...')
+    t.create_gee_asset()
+    print(f'  Done.')
+```
+
+    Processing INSAR_ISCE_BURST_processing_example
+      Transferring files from ASF to local computer...
+      Transferring files from local computer to Google Cloud Storage...
+      Creating Google Earth Engine assets...
+      Done.
+
+    /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/.pixi/envs/default/lib/python3.11/site-packages/asf_search/download/download.py:65: UserWarning: File already exists, skipping download: temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E.zip
+      warnings.warn(f'File already exists, skipping download: {os.path.join(path, filename)}')
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_unw_phase.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_water_mask.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_lv_phi.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_unw_phase.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_wrapped_phase_rdr.tif
+
+    Updating dataset tags...
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_wrapped_phase_rdr.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_corr.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_lv_phi.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_inc_map_ell.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_corr.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lv_theta.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_inc_map_ell.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_lv_theta.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lv_theta.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lat_rdr.tif
+
+    Updating dataset tags...
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lat_rdr.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_conncomp.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_lv_theta.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_unw_phase.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_conncomp.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_dem.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_unw_phase.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_amp.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_dem.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lv_phi.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_amp.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_wrapped_phase.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lv_phi.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_los_rdr.tif
+
+    Updating dataset tags...
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_los_rdr.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lon_rdr.tif
+
+    Updating dataset tags...
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_lon_rdr.tif
+    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_wrapped_phase.tif
 
     Adding overviews...
     Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_wrapped_phase.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_dem.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_dem.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_water_mask.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_water_mask.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_lv_phi.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_lv_phi.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_vert_disp.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_vert_disp.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_inc_map_ell.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_inc_map_ell.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_corr.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_corr.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_dem.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_dem.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_unw_phase.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_unw_phase.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_amp.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_amp.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_los_disp.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_los_disp.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_wrapped_phase.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_wrapped_phase.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_lv_theta.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_lv_theta.tif
-    Reading input: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_inc_map.tif
-
-    Adding overviews...
-    Updating dataset tags...
-    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_inc_map.tif
-
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_corr.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_los_disp.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_inc_map.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_vert_disp.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_water_mask.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_lv_phi.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_inc_map_ell.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_lv_theta.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_unw_phase.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_amp.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_wrapped_phase.tif
-    hyp3-data-staging/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75/S1AA_20230331T140803_20230412T140803_VVP012_INT80_G_ueF_3F75_dem.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_water_mask.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_lv_phi.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_vert_disp.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_inc_map_ell.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_corr.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_dem.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_unw_phase.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_amp.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_los_disp.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_wrapped_phase.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_lv_theta.tif
-    hyp3-data-staging/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264/S1AA_20230327T130015_20230408T130016_VVP012_INT80_G_ueF_F264_inc_map.tif
+    Writing output to: /Users/tylere/Documents/GitHub/gee-community/sar-asf-to-gee/temp_downloads/S1_184906_IW1_20240104_20240116_VV_INT80_E33E/S1_184906_IW1_20240104_20240116_VV_INT80_E33E_wrapped_phase.tif
