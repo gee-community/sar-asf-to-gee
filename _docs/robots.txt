@@ -1,1 +1,0 @@
-Sitemap: https://gee-community.github.io/sar-asf-to-gee/sitemap.xml
