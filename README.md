@@ -7,6 +7,10 @@
 This package facilitates the transfer of ASF HyP3 processed SAR datasets
 to Google Cloud Storage and the creation of Google Earth Engine assets.
 
+![Coherence image](images/screenshot_coherence.png) *Screenshot showing
+a coherence image produced by ASF HyP3, visualized in the Google Earth
+Engine Code Editor.*
+
 # Install
 
 ## Prerequisites
